@@ -1259,6 +1259,22 @@ void GL_SetCanvas(canvastype newcanvas)
 		glViewport(vp_x, vp_y, vp_w, vp_h);
 		break;
 	}
+	case CANVAS_SA_BOTTOM:
+	{
+		float s = (float)glwidth / 320.0f;
+
+		int vp_w = glwidth;
+		int vp_h = (int)(200.0f * s + 0.5f);
+
+		int vp_x = glx;
+		int vp_y = gly; 
+
+		glViewport(vp_x, vp_y, vp_w, vp_h);
+
+		glOrtho(0, 320, 200, 12, -99999, 99999);
+
+		break;
+	}
 	case CANVAS_SA_SMALL:
 	{
 		const float base_aspect = 320.0f / 200.0f;
@@ -1458,6 +1474,11 @@ void GL_SetCanvas(canvastype newcanvas)
 		s = ((float)glwidth / vid.conwidth); //use console scale
 		glOrtho(0, 320, 200, 0, -99999, 99999);
 		glViewport(glx + glwidth - 200 * s, (gly + glheight - 212 * s), 320 * s, 200 * s);
+		break;
+	case CANVAS_SCOREBOARD_SA: // avião
+		s = (float)glwidth / vid.conwidth; 
+		glOrtho(0, glwidth / s, glheight / s, 0, -99999, 99999);
+		glViewport(glx, gly, glwidth, glheight);
 		break;
 	default:
 		Sys_Error("GL_SetCanvas: bad canvas type");

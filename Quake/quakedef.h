@@ -163,6 +163,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define STAT_PUNCHVECTOR_Y	30
 #define STAT_PUNCHVECTOR_Z	31
 
+//avião
+#define STAT_CURRENT_WEAPON 32
+#define STAT_DASH_INDEX 33
+#define STAT_DASH_PERC 34
+
+#define WEAPON_V_AXE      1
+#define WEAPON_V_SHOT     2
+#define WEAPON_V_SHOT2    3
+#define WEAPON_V_NAIL     4
+#define WEAPON_V_LAVA     5
+#define WEAPON_V_NAIL2    6
+#define WEAPON_V_LAVA2    7
+#define WEAPON_V_ROCK     8
+#define WEAPON_V_MULTI    9
+#define WEAPON_V_ROCK2    10
+#define WEAPON_V_MULTI2   11
+#define WEAPON_V_LIGHT    12
+#define WEAPON_V_PLASMA   13
+
 //dp defines these. most are useless but we fill them in for consistency.
 //#define STAT_MOVEVARS_AIRACCEL_QW_STRETCHFACTOR		220
 //#define STAT_MOVEVARS_AIRCONTROL_PENALTY			221

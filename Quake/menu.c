@@ -302,7 +302,7 @@ void     M_Language_Mousemove(int cx, int cy);
 
 int gameover_cursor;
 
-// avi√£o
+// avi„o
 qboolean m_skill_from_newgame;
 
 //gltexture_t* lore_textures[256];
@@ -1426,10 +1426,9 @@ Main Menu
 ==================
 */
 
-#ifndef BDDPRE4
 qboolean m_main_banner_hover;
-//qboolean m_main_banner2_hover;
-#endif
+qboolean m_main_banner2_hover;
+
 int	m_main_cursor;
 int m_main_mods; // woods #modsmenu (iw)
 int m_main_demos; // woods #modsmenu #demosmenu (iw)
@@ -1482,18 +1481,25 @@ void M_Main_Draw(void) // woods #modsmenu #demosmenu (iw)
 {
 	M_DrawTransPic(16, 4, Draw_CachePic("gfx/qplaque.lmp"));
 
-#ifndef BDDPRE4
 	{
 		glPushMatrix();
 
 		qpic_t* bannerPic = Draw_CachePic("gfx/bddpre4.png");
-		float bannerScale = LERP(0.15f, 0.152f, sin(realtime * 8.0));
-
+#ifndef BDDPRE4
+		float bannerScale = LERP(0.1125f, 0.114f, sin(realtime * 8.0));
+#else
+		float bannerScale = LERP(0.1125f, 0.114f, sin(realtime * 8.0)) * 0.7f;
+#endif
 		float halfW = (float)bannerPic->width * 0.5f;
 		float halfH = (float)bannerPic->height * 0.5f;
 
+#ifndef BDDPRE4
 		float centerX = 320.0f - (halfW * bannerScale);
 		float centerY = 200.0f - 8.0f - (halfH * bannerScale);
+#else
+		float centerX = (halfW * bannerScale);
+		float centerY = 200.0f - (halfH * bannerScale);
+#endif
 		if (m_main_banner_hover) {
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			glEnable(GL_BLEND);
@@ -1514,19 +1520,22 @@ void M_Main_Draw(void) // woods #modsmenu #demosmenu (iw)
 		}
 		glPopMatrix();
 	}
-
-	/*{
+	{
 		glPushMatrix();
 
-		qpic_t* bannerPic = Draw_CachePic("gfx/plushie_pic.png");
-		float bannerScale = 0.03f;
+		qpic_t* bannerPic = Draw_CachePic("gfx/physical.png");
+		float bannerScale = 0.1125f;
 		float bannerRotation = LERP(-0.3, 0.3, sin(realtime * 8.0));
 
 		float halfW = (float)bannerPic->width * 0.5f;
 		float halfH = (float)bannerPic->height * 0.5f;
 
-		float centerX = 320.0f - (halfW * bannerScale);
-		float centerY = 110.0f - (halfH * bannerScale);
+		float centerX = halfW * bannerScale;
+#ifndef BDDPRE4
+		float centerY = 200.0f - 8.0f - (halfH * bannerScale);
+#else
+		float centerY = 200.0f - (halfH * bannerScale);
+#endif
 
 		glTranslatef(centerX, centerY, 0.0f);
 		if (m_main_banner2_hover) {
@@ -1548,8 +1557,7 @@ void M_Main_Draw(void) // woods #modsmenu #demosmenu (iw)
 			glColor3f(1.0, 1.0, 1.0);
 		}
 		glPopMatrix();
-	}*/
-#endif
+	}
 
 	const double scale = 1.5;
 	const double invScale = 1.0 / scale;
@@ -1712,20 +1720,18 @@ void M_Main_Key(int key) // woods #modsmenu #demosmenu (iw)
 	case K_KP_ENTER:
 	case K_ABUTTON:
 	case K_MOUSE1: // woods #mousemenu
-#ifndef BDDPRE4
 		if (m_main_banner_hover) {
 			if (key == K_MOUSE1) {
 				SDL_OpenURL("https://store.steampowered.com/app/4241920/AVIOZINHO_DO_TRFICO_PR_4_SOBRARAM_DEMONIOS_DO_PORTAL_PRO_INFERNO_NA_FAVELA_QUE_ABRI_E_AGORA_TENHO_QUE_SALVAR_OS_MAMADAS_DO_RONALDO");
 			}
 			return;
 		}
-		//if (m_main_banner2_hover) {
-		//	if (key == K_MOUSE1) {
-		//		SDL_OpenURL("https://www.makeship.com/products/da-silva-protagonist-of-the-brazilian-drug-dealer-franchise-plush");
-		//	}
-		//	return;
-		//}
-#endif
+		if (m_main_banner2_hover) {
+			if (key == K_MOUSE1) {
+				SDL_OpenURL("https://lootboxgaming.us/products/brazilian-drug-dealer-3-pc-cd-rom");
+			}
+			return;
+		}
 		m_key_was_m = false;
 		m_entersound = true;
 
@@ -1768,10 +1774,32 @@ void M_Main_Key(int key) // woods #modsmenu #demosmenu (iw)
 
 void M_Main_Mousemove(int cx, int cy) // woods #mousemenu
 {
-#ifndef BDDPRE4
-	m_main_banner_hover = cx >= 320 - 74 && cx < 320 && cy >= 200 - 96 && cy < 200;
-	//m_main_banner2_hover = cx >= 320 - 90 && cx < 320 && cy >= 110 - 64 && cy < 110;
+#ifdef BDDPRE4
+	m_main_banner_hover =
+		cx >= 0 &&
+		cx < 74 * 0.7f * 0.75f &&
+		cy >= 200 - (96 * 0.7f * 0.75f) &&
+		cy < 200;
+
+	m_main_banner2_hover =
+		cx >= 0 &&
+		cx < 90 * 0.75f &&
+		cy >= 200 - (64 * 0.75f) &&
+		cy < 200;
+#else
+	m_main_banner_hover =
+		cx >= 320 - (74 * 0.75f) &&
+		cx < 320 &&
+		cy >= 200 - 8 - (96 * 0.75f) &&
+		cy < 200 - 8;
+
+	m_main_banner2_hover =
+		cx >= 0 &&
+		cx < 90 * 0.75f &&
+		cy >= 200 - 8 - (64 * 0.75f) &&
+		cy < 200 - 8;
 #endif
+
 	M_UpdateCursor(cy, 32, 20, MAIN_ITEMS - !m_main_mods - !m_main_demos, &m_main_cursor);
 	if (m_main_cursor >= MAIN_MODS && !m_main_mods)
 		++m_main_cursor;
@@ -1869,7 +1897,10 @@ void M_SinglePlayer_Key(int key)
 		}
 		else
 		{
-			if (!horde_map) {
+#if HORDE_FIX
+			if (!horde_map)
+#endif
+			{
 				sp_lastkey_time = realtime;
 				sp_key_was_l = true;
 				m_singleplayer_cursor = 1;  // Load Game
@@ -1880,7 +1911,10 @@ void M_SinglePlayer_Key(int key)
 
 	case 'o':
 	case 'O':
-		if (!horde_map) {
+#if HORDE_FIX
+		if (!horde_map)
+#endif
+		{
 			time_since_l = realtime - sp_lastkey_time;
 			if (sp_key_was_l && time_since_l < 0.5)  // 500ms window to type 'lo'
 			{
@@ -1903,7 +1937,10 @@ void M_SinglePlayer_Key(int key)
 		break;
 	case 's':
 	case 'S':
-		if (!horde_map) {
+#if HORDE_FIX
+		if (!horde_map)
+#endif
+		{
 			sp_key_was_l = false;
 			m_singleplayer_cursor = 2;  // Save Game
 			S_LocalSound("misc/menu1.wav");
@@ -1937,33 +1974,42 @@ void M_SinglePlayer_Key(int key)
 			if (sv.active)
 				if (!SCR_ModalMessage(LOC_GetString("$msg_are_you_sure_new"), 0.0f))
 					break;
-			// avi√£o
+			// avi„o
 			m_skill_from_newgame = true;
 			M_Menu_Skill_f();
 			break;
 
 		case 1:
+#if HORDE_FIX
 			if (horde_map) {
 				SCR_ModalMessage(LOC_GetString("$horde_load_save_disabled"), 4.0f);
 			}
-			else {
+			else
+#endif
+			{
 				M_Menu_Load_f();
 			}
 			break;
 		case 2:
+#if HORDE_FIX
 			if (horde_map) {
 				SCR_ModalMessage(LOC_GetString("$horde_load_save_disabled"), 4.0f);
 			}
-			else {
+			else
+#endif	
+			{
 				if (SCR_ModalMessage(LOC_GetString("$msg_are_you_sure_loadquick"), 0.0f))
 					Cbuf_AddText("load quick.sav\n");
 			}
 			break;
 		case 3:
+#if HORDE_FIX
 			if (horde_map) {
 				SCR_ModalMessage(LOC_GetString("$horde_load_save_disabled"), 4.0f);
 			}
-			else {
+			else
+#endif
+			{
 				M_Menu_Save_f();
 			}
 			break;
@@ -2034,7 +2080,7 @@ void M_ScanSaves(void)
 	struct stat st;
 #endif
 
-	// avi√£o
+	// avi„o
 	char save_dir[MAX_PATH];
 	GetSaveDir(save_dir, NULL);
 
@@ -2047,7 +2093,7 @@ void M_ScanSaves(void)
 		save_entries[i].original_index = i;
 		q_strlcpy(save_entries[i].mapname, "", sizeof(save_entries[i].mapname));
 
-		// avi√£o
+		// avi„o
 		q_snprintf(name, sizeof(name), "%s/s%i.sav", save_dir, i); // legacy
 		f = fopen(name, "r");
 
@@ -2575,7 +2621,7 @@ void M_Maps_Key(int key)
 			}
 			else
 			{
-				// avi√£o
+				// avi„o
 				m_skill_from_newgame = false;
 				// Original behavior - go to skill menu
 				M_SetSkillMenuMap(mapsmenu.items[mapsmenu.filtered_indices[mapsmenu.list.cursor]].name);
@@ -2808,11 +2854,10 @@ void M_Menu_AutoAim_f(void)
 	m_entersound = true;
 	M_Ticker_Init(&m_autoaim_ticker);
 
-	cvar_t* sv_aim = Cvar_FindVar("sv_aim");
+	cvar_t* sv_enable_aim = Cvar_FindVar("sv_enable_aim");
 
-	// Select current autoaim level initially if there's no autosave
-	m_autoaim_cursor = (int)sv_aim->value;
-	m_autoaim_cursor = CLAMP(0, m_autoaim_cursor, 2);
+	m_autoaim_cursor = !(int)sv_enable_aim->value;
+	m_autoaim_cursor = CLAMP(0, m_autoaim_cursor, 1);
 
 	m_autoaim_numoptions = 2;
 }
@@ -2882,7 +2927,7 @@ void M_AutoAim_Key(int key)
 	case K_KP_ENTER:
 	case K_ABUTTON:
 	case K_MOUSE1:
-		Cvar_SetValue("sv_aim", m_autoaim_cursor == 0 ? 0.0f : 1.0f);
+		Cvar_SetValue("sv_enable_aim", !m_autoaim_cursor);
 		key_dest = key_game;
 		if (sv.active)
 			Cbuf_AddText("disconnect\n");
@@ -2925,12 +2970,12 @@ int	m_multiplayer_cursor;
 #define	MULTIPLAYER_ITEMS	3
 extern cvar_t scr_shownet; // woods
 
-//avi√£o
+//avi„o
 int lanConfig_steam_server = 1;
 
 void M_Menu_MultiPlayer_f(void)
 {
-	//avi√£o
+	//avi„o
 	lanConfig_steam_server = 1;
 	key_dest = key_menu;
 	m_state = m_multiplayer;
@@ -3048,7 +3093,7 @@ void M_MultiPlayer_Key(int key)
 		{
 		case 0:
 			if (ipxAvailable || ipv4Available || ipv6Available) {
-				// avi√£o
+				// avi„o
 				lanConfig_steam_server = 0;
 				M_Menu_LanConfig_f(); // woods #skipipx
 			}
@@ -3178,7 +3223,7 @@ void M_AllMods_Mousemove(int cx, int cy) // woods #mousemenu
 /*
 /*
 ==================
-Languages (avi√£o)
+Languages (avi„o)
 ==================
 */
 
@@ -7367,7 +7412,7 @@ static enum game_e
 	GAME_VIEWMODEL,      // Added
 	GAME_TEAMCOLOR,  // Added
 	GAME_ENEMYCOLOR, // Added
-	GAME_AUTOAIM, //avi√£o
+	GAME_AUTOAIM, //avi„o
 	GAME_COUNT,
 } game_cursor;
 
@@ -7684,8 +7729,8 @@ static void M_Game_AdjustSliders(int dir)
 		break;
 
 	case GAME_AUTOAIM:
-		cvar_t* sv_aim = Cvar_FindVar("sv_aim");
-		Cvar_SetValue("sv_aim", !sv_aim->value);
+		cvar_t* sv_enable_aim = Cvar_FindVar("sv_enable_aim");
+		Cvar_SetValue("sv_enable_aim", !sv_enable_aim->value);
 
 		break;
 	case GAME_COUNT:
@@ -7836,8 +7881,8 @@ void M_Game_Draw(void)
 
 		case GAME_AUTOAIM:
 			text = LOC_GetString("$menu_gun_auto_aim_indented");
-			cvar_t* sv_aim = Cvar_FindVar("sv_aim");
-			M_DrawCheckbox(178, y, sv_aim->value != 0);
+			cvar_t* sv_enable_aim = Cvar_FindVar("sv_enable_aim");
+			M_DrawCheckbox(178, y, sv_enable_aim->value != 0);
 			break;
 
 		default:
@@ -11621,7 +11666,7 @@ void M_LanConfig_Draw(void)
 
 	y = 52;
 
-	//avi√£o
+	//avi„o
 	if (StartingGame) {
 		M_Print(basex, y, LOC_GetString("$menu_steam_server"));
 		const char* steamServerDescription = lanConfig_steam_server == 0 ? LOC_GetString("$no") : LOC_GetString("$yes");
@@ -11960,15 +12005,15 @@ void M_LanConfig_Key(int key)
 		else
 		{
 			if (lanConfig_cursor == 1) {
-				Cbuf_AddText("steamserver 0"); //avi√£o
+				Cbuf_AddText("steamserver 0"); //avi„o
 				M_Menu_Search_f(SLIST_LAN);
 			}
 			else if (lanConfig_cursor == 2) {
-				Cbuf_AddText("steamserver 0"); //avi√£o
+				Cbuf_AddText("steamserver 0"); //avi„o
 				M_Menu_Search_f(SLIST_INTERNET);
 			}
 			else if (lanConfig_cursor == 3) {
-				Cbuf_AddText("steamserver 1"); //avi√£o
+				Cbuf_AddText("steamserver 1"); //avi„o
 				M_Menu_Search_f(SLIST_INTERNET);
 			}
 			else if (lanConfig_cursor == 4) // woods #historymenu
@@ -12845,7 +12890,7 @@ void M_LanConfig_Mousemove(int cx, int cy)
 	}
 
 	// If not over IPs, handle regular menu cursor movement
-	// avi√£o
+	// avi„o
 	int numCommands = StartingGame ? !lanConfig_steam_server ? NUM_LANCONFIG_CMDS_NEWGAME : 2 : NUM_LANCONFIG_CMDS_JOINGAME;
 	int* subCursor_ptr = StartingGame && lanConfig_steam_server ? lanConfig_cursor_table_steamnewgame : lanConfig_cursor_ptr;
 	M_UpdateCursorWithTable(cy, subCursor_ptr, numCommands, &lanConfig_cursor);
@@ -13925,7 +13970,7 @@ void RemoveDuplicateServers(servertitem_t** items, int* actualServerCount)
 
 extern cvar_t steamserver;
 
-// avi√£o
+// avi„o
 void GNS_FetchServerList(servertitem_t** items, int* actualServerCount) {
 	Pipe_Write("server_list");
 	if (Pipe_Read()) {
@@ -13939,7 +13984,7 @@ void FetchAndSortServers(void)
 	serversmenu.items = NULL;
 	int actualServerCount = 0;
 
-	// avi√£o
+	// avi„o
 	if (steamserver.value) {
 		GNS_FetchServerList(&serversmenu.items, &actualServerCount);
 	}
@@ -15245,7 +15290,7 @@ void M_Menu_Credits_f(void)
 
 void M_Menu_SearchInternet_f(void) // woods
 {
-	Cbuf_AddText("steamserver 0"); //avi√£o
+	Cbuf_AddText("steamserver 0"); //avi„o
 	M_Menu_Search_f(SLIST_INTERNET);
 }
 
@@ -15869,10 +15914,8 @@ void M_Mousemove(int x, int y) // woods #mousemenu
 	m_mousex = x = bounds.x + (int)((x - viewport.x) * bounds.width / (float)viewport.width + 0.5f);
 	m_mousey = y = bounds.y + (int)((y - viewport.y) * bounds.height / (float)viewport.height + 0.5f);
 
-#ifndef BDDPRE4
 	m_main_banner_hover = 0;
-	//m_main_banner2_hover = 0;
-#endif
+	m_main_banner2_hover = 0;
 
 	switch (m_state)
 	{

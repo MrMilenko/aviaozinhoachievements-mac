@@ -65,7 +65,7 @@ qpic_t* rsb_ammo[3];
 qpic_t* rsb_teambord;		// PGM 01/19/97 - team color border
 
 // avião
-qpic_t* av_weapons[6];
+qpic_t* av_weapons[7];
 
 //MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
 qpic_t* hsb_weapons[7][5];   // 0 is active, 1 is owned, 2-5 are flashes
@@ -81,6 +81,7 @@ static int hudtype;
 
 void Sbar_MiniDeathmatchOverlay(void);
 void Sbar_DeathmatchOverlay(void);
+void Sbar_DeathmatchOverlaySA(void);
 void M_DrawPic(int x, int y, qpic_t* pic);
 void Draw_SubPic_QW(int x, int y, qpic_t* pic, int ofsx, int ofsy, int w, int h); // woods #sbarstyles for qw hud
 extern cvar_t scr_showspeed; // woods
@@ -307,6 +308,7 @@ void Sbar_LoadPics(void)
 	av_weapons[3] = Draw_PicFromWad("inv_multirock");
 	av_weapons[4] = Draw_PicFromWad("inv_plasma");
 	av_weapons[5] = Draw_PicFromWad("inv_axe");
+	av_weapons[6] = Draw_PicFromWad("inv_skate");
 }
 
 /*
@@ -989,49 +991,57 @@ void Sbar_DrawInventorySA(void)
 {
 	qpic_t* border = Draw_CachePic("gfx/weapon_border");
 	Sbar_DrawPic(280, 4, border);
-	int weaponModel = cl.stats[STAT_WEAPON];
-	const char* modelName = cl.model_name[weaponModel];
-	if (strcmp(modelName, "progs/v_axe.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[5]); // chinelo
-	}
-	else if (strcmp(modelName, "progs/v_shot.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][0]); // shotgun
-	}
-	else if (strcmp(modelName, "progs/v_shot2.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][1]); // shotgun dourada
-	}
-	else if (strcmp(modelName, "progs/v_nail.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][2]); // double pistol
-	}
-	else if (strcmp(modelName, "progs/v_lava.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[0]); // chimas
-	}
-	else if (strcmp(modelName, "progs/v_nail2.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][3]); // AK
-	}
-	else if (strcmp(modelName, "progs/v_lava2.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[1]); // fuzil azul
-	}
-	else if (strcmp(modelName, "progs/v_rock.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][4]); // rocket
-	}
-	else if (strcmp(modelName, "progs/v_multi.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[2]); // berimbau
-	}
-	else if (strcmp(modelName, "progs/v_rock2.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][5]); // rocket vermelha
-	}
-	else if (strcmp(modelName, "progs/v_multi2.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[3]); // orelhão
-	}
-	else if (strcmp(modelName, "progs/v_light.mdl") == 0) {
-		Sbar_DrawPic(280, 4, sb_weapons[1][6]); // cobra
-	}
-	else if (strcmp(modelName, "progs/v_plasma.mdl") == 0) {
-		Sbar_DrawPic(280, 4, av_weapons[4]); // aviãozinho
+	qboolean noAmmo = false;
+
+	int weaponModel = cl.stats[STAT_CURRENT_WEAPON];
+	switch (weaponModel) {
+	case WEAPON_V_AXE:
+		Sbar_DrawPic(280, 4, av_weapons[5]);
+		noAmmo = true;
+		break;
+	case WEAPON_V_SHOT:
+		Sbar_DrawPic(280, 4, sb_weapons[1][0]);
+		break;
+	case WEAPON_V_SHOT2:
+		Sbar_DrawPic(280, 4, sb_weapons[1][1]);
+		break;
+	case WEAPON_V_NAIL:
+		Sbar_DrawPic(280, 4, sb_weapons[1][2]);
+		break;
+	case WEAPON_V_LAVA:
+		Sbar_DrawPic(280, 4, av_weapons[0]);
+		break;
+	case WEAPON_V_NAIL2:
+		Sbar_DrawPic(280, 4, sb_weapons[1][3]);
+		break;
+	case WEAPON_V_LAVA2:
+		Sbar_DrawPic(280, 4, av_weapons[1]);
+		break;
+	case WEAPON_V_ROCK:
+		Sbar_DrawPic(280, 4, sb_weapons[1][4]);
+		break;
+	case WEAPON_V_MULTI:
+		Sbar_DrawPic(280, 4, av_weapons[2]);
+		break;
+	case WEAPON_V_ROCK2:
+		Sbar_DrawPic(280, 4, sb_weapons[1][5]);
+		break;
+	case WEAPON_V_MULTI2:
+		Sbar_DrawPic(280, 4, av_weapons[3]);
+		break;
+	case WEAPON_V_LIGHT:
+		Sbar_DrawPic(280, 4, sb_weapons[1][6]);
+		break;
+	case WEAPON_V_PLASMA:
+		Sbar_DrawPic(280, 4, av_weapons[4]);
+		break;
+	default:
+		Sbar_DrawPic(280, 4, av_weapons[6]);
+		noAmmo = true;
+		break;
 	}
 
-	if (strcmp(modelName, "progs/v_axe.mdl") != 0) {
+	if (!noAmmo) {
 		char num[6];
 		int val = cl.stats[STAT_AMMO];
 		val = (val < 0) ? 0 : q_min(999, val);
@@ -1051,15 +1061,28 @@ void Sbar_DrawInventorySA(void)
 	SBar_DrawQuad(212, 24, 62, 4, 0.2f, 0.2f, 0.2f);
 	SBar_DrawQuad(212, 24, 62 * healthFactor, 4, 0.7f, 0.0f, 0.0f);
 
+	const float widthPerDash = 64.0f / 3.0f;
+	int dashIndex = cl.stats[STAT_DASH_INDEX];
+	float dashFactor = (float)cl.stats[STAT_DASH_PERC] / 100.0f;
+	for (int i = 0; i < 3; i++) {
+		SBar_DrawQuad(211 + (widthPerDash) * i, 30, widthPerDash, 6, 0.0f, 0.0f, 0.0f);
+		SBar_DrawQuad(212 + (widthPerDash) * i, 31, widthPerDash - 2.0f, 4, 0.2f, 0.2f, 0.2f);
+		if (dashIndex == i) {
+			SBar_DrawQuad(212 + (widthPerDash) * i, 31, (widthPerDash - 2.0f) * dashFactor, 4, 0.31f, 0.42f, 0.66f);
+		}
+		else if (dashIndex > i) {
+			SBar_DrawQuad(212 + (widthPerDash) * i, 31, widthPerDash - 2.0f, 4, 0.31f, 0.42f, 0.66f);
+		}
+	}
+
 	int armor = cl.stats[STAT_ARMOR];
 	if (armor != 0)
 	{
 		float armorFactor = (float)armor / 100.0f;
 		armorFactor = CLAMP(0.0f, armorFactor, 1.0f);
-
-		SBar_DrawQuad(211, 30, 64, 6, 0.0f, 0.0f, 0.0f);
-		SBar_DrawQuad(212, 31, 62, 4, 0.2f, 0.2f, 0.2f);
-		SBar_DrawQuad(212, 31, 62 * armorFactor, 4, 1.0f, 1.0f, 1.0f);
+		SBar_DrawQuad(211, 37, 64, 6, 0.0f, 0.0f, 0.0f);
+		SBar_DrawQuad(212, 38, 62, 4, 0.2f, 0.2f, 0.2f);
+		SBar_DrawQuad(212, 38, 62 * armorFactor, 4, 1.0f, 1.0f, 1.0f);
 	}
 }
 
@@ -2120,15 +2143,63 @@ void Sbar_Draw(void)
 	sb_updates++;
 
 	if (clampedSbar == 4) {
+
+		float scale = scr_sbarscale.value;
+		scale /= 3.2f;
+
 		GL_SetCanvas(CANVAS_SA);
-		Sbar_DrawInventorySA();
-		Sbar_SoloScoreboardSA();
 		glPushMatrix();
-		glScalef(0.7, 0.7, 0.7);
-		Sbar_FacePicEx(305, 16);
-		Sbar_DrawItemsSA(428, 74);
+		{
+			glTranslatef(320.0f, 4.0f, 0.0f);
+			glScalef(scale, scale, 1.0f);
+			glTranslatef(-320.0f, -4.0f, 0.0f);
+
+			Sbar_DrawInventorySA();
+			Sbar_SoloScoreboardSA();
+			glPushMatrix();
+			{
+				glScalef(0.7, 0.7, 0.7);
+				Sbar_FacePicEx(305, 16);
+				Sbar_DrawItemsSA(428, 78);
+			}
+			glPopMatrix();
+		}
 		glPopMatrix();
-		//Sbar_FacePicEx(182, 12);
+
+		GL_SetCanvas(CANVAS_SA_BOTTOM);
+		glPushMatrix();
+		{
+			glTranslatef(160.0f, 200.0f, 0.0f);
+			glScalef(scale, scale, 1.0f);
+			glTranslatef(-160.0f, -200.0f, 0.0f);
+
+			glTranslatef(0.0f, 200.0f - 48.0f, 0.0f);
+
+			if (sb_showscores)
+			{
+				Sbar_SoloScoreboard();
+			}
+
+			//if (cl.gametype == GAME_DEATHMATCH)
+			//	Sbar_MiniDeathmatchOverlay();
+
+			if (cls.demorecording)
+				Sbar_DrawRecord();
+		}
+		glPopMatrix();
+
+		if (sb_showscores)
+		{
+			if (cl.gametype == GAME_DEATHMATCH || cl.maxclients > 1)
+			{
+				Sbar_DeathmatchOverlaySA();
+			}
+		}
+
+		if (sb_showscores)
+		{
+			sb_updates = 0;
+		}
 		return;
 	}
 
@@ -2501,6 +2572,132 @@ Sbar_DeathmatchOverlay
 
 ==================
 */
+
+void Sbar_DeathmatchOverlaySA(void)
+{
+	int i, k, l;
+	int x, y, f;
+	int y2;
+	int xofs, yofs;
+	char num[12];
+	scoreboard_t* s;
+	int ct = (SDL_GetTicks() - maptime) / 1000;
+	qboolean notready = false;
+	qboolean oneready = false;
+
+	if (iplog_size && (cl.time - cl.last_status_time > 5))
+	{
+		MSG_WriteByte(&cls.message, clc_stringcmd);
+		SZ_Print(&cls.message, "status\n");
+		cl.last_status_time = cl.time;
+	}
+
+	GL_SetCanvas(CANVAS_SCOREBOARD_SA);
+	glPushMatrix();
+
+	glTranslatef(0.0f, 80.0f, 0.0f);
+
+	xofs = (vid.conwidth - 320) >> 1;
+	yofs = (vid.conheight - 200) >> 1;
+
+	x = xofs + 64;
+	y2 = y = yofs - 20;
+
+	Sbar_SortFrags(false);
+
+	l = scoreboardlines;
+
+	Draw_Fill(x - 64, y - 11, 328, 10, 16, 1);
+	Draw_Fill(x - 64, y - 12, 329, 1, 0, 1);
+	Draw_Fill(x - 64, y - 12, 1, 11, 0, 1);
+	Draw_Fill(x + 264, y - 12, 1, 11, 0, 1);
+	Draw_Fill(x - 64, y - 1, 329, 1, 0, 1);
+
+	for (i = 0; i < l; i++)
+	{
+		k = fragsort[i];
+		s = &cl.scores[k];
+
+		if (!s->name[0])
+			continue;
+
+		char qfReady[6] = { 210, 229, 225, 228, 249, '\0' };
+
+		if (cl.modtype == 1 || cl.modtype == 4)
+		{
+			if (!cl.teamgame)
+				notready = false;
+
+			if (strstr(s->name, qfReady) || strstr(s->name, "Ready"))
+				oneready = true;
+
+			if ((k == cl.realviewentity - 1) && cl.teamgame && !cl.matchinp && cl.notobserver)
+			{
+				if (strstr(s->name, qfReady) || strstr(s->name, "Ready"))
+					notready = false;
+				else
+					notready = true;
+			}
+		}
+
+		Draw_Fill(x - 63, y, 328, 10, (k == cl.viewentity - 1) ? 20 : 18, .8);
+
+		Draw_Fill(x - 64, y, 1, 10, 0, 1);
+		Draw_Fill(x + 264, y, 1, 10, 0, 1);
+
+		if (S_Voip_Speaking(k))
+			Draw_Fill(x, y, 320 - x * 2, 8, ((k + 1) == cl.viewentity) ? 75 : 73, 1);
+
+		if (s->spectator == 1)
+		{
+			M_PrintWhite(x, y, "spect");
+		}
+		else
+		{
+			Draw_FillPlayer(x, y, 40, 4, s->shirt, 1);
+			Draw_FillPlayer(x, y + 4, 40, 4, s->pants, 1);
+
+			f = s->frags;
+			sprintf(num, "%3i", f);
+
+			Draw_Character(x + 8, y, num[0]);
+			Draw_Character(x + 16, y, num[1]);
+			Draw_Character(x + 24, y, num[2]);
+
+			if (k == cl.viewentity - 1)
+				Draw_Character(x - 8, y, 12);
+		}
+
+		sprintf(num, "%4i", s->ping);
+
+		if (ct > 5)
+			M_PrintWhite((x - 8 * 4) - 22, y, num);
+
+		M_PrintWhite(x + 64, y, s->name);
+
+		y += 10;
+	}
+
+	Draw_String(x - 64, y2 - 10, "  ping  frags   name");
+
+	if (flash() && notready && oneready)
+		M_Print(x + 192, y2 - 10, "status");
+	else
+		Draw_String(x + 192, y2 - 10, "status");
+
+	Draw_Fill(x - 64, y, 329, 1, 0, 1);
+	glPopMatrix();
+	GL_SetCanvas(CANVAS_SBAR);
+
+	if ((!cls.message.cursize && cl.expectingpingtimes < realtime) && (cls.signon >= SIGNONS))
+	{
+		cl.expectingpingtimes = realtime + 5;
+		MSG_WriteByte(&cls.message, clc_stringcmd);
+		MSG_WriteString(&cls.message, "ping");
+	}
+
+}
+
 void Sbar_DeathmatchOverlay(void)
 {
 	//qpic_t	*pic; // woods disabled

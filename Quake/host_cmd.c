@@ -2349,7 +2349,7 @@ static void Host_Map_f(void)
 	p = strstr(name, ".bsp");
 	if (p && p[4] == '\0')
 		*p = '\0';
-
+#if HORDE_FIX
 	//avião: horde hack
 	const char* game = COM_GetGameNames(false);
 
@@ -2389,6 +2389,16 @@ static void Host_Map_f(void)
 			return;
 		}
 	}
+#else
+	if (_strnicmp(name, "horda_", 6) == 0)
+	{
+		Cbuf_AddText("horde 1\n");
+	}
+	else
+	{
+		Cbuf_AddText("horde 0\n");
+	}
+#endif
 
 	if (cls.state != ca_dedicated) // woods -- try to download map
 	{

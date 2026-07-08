@@ -1563,6 +1563,7 @@ void SV_Init (void)
 	extern	cvar_t	sv_accelerate;
 	extern	cvar_t	sv_idealpitchscale;
 	extern	cvar_t	sv_aim;
+	extern	cvar_t	sv_enable_aim; //avião
 	extern	cvar_t	sv_altnoclip; //johnfitz
 	extern	cvar_t	sv_autoload; // woods #autoload (iw)
 	extern	cvar_t	sv_nqplayerphysics; //spike
@@ -1592,6 +1593,7 @@ void SV_Init (void)
 	Cvar_RegisterVariable (&sv_accelerate);
 	Cvar_RegisterVariable (&sv_idealpitchscale);
 	Cvar_RegisterVariable (&sv_aim);
+	Cvar_RegisterVariable (&sv_enable_aim); //avião
 	Cvar_RegisterVariable (&sv_nostep);
 	Cvar_RegisterVariable (&sv_freezenonclients);
 	Cvar_RegisterVariable (&sv_gameplayfix_spawnbeforethinks);

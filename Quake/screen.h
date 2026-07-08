@@ -101,6 +101,8 @@ typedef enum {
 	CANVAS_MENUQC,
 	CANVAS_SA,  // avião
 	CANVAS_SA_SMALL, //avião
+	CANVAS_SA_BOTTOM, //avião
+	CANVAS_SCOREBOARD_SA, // avião
 	CANVAS_INVALID = -1
 } canvastype;
 extern	cvar_t		scr_menuscale;

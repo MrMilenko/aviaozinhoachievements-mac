@@ -1498,7 +1498,9 @@ Pick a vector for the player to shoot along
 vector aim(entity, missilespeed)
 =============
 */
-cvar_t	sv_aim = {"sv_aim", "1", CVAR_NONE}; // ericw -- turn autoaim off by default. was 0.93
+
+cvar_t	sv_enable_aim = { "sv_enable_aim", "0", CVAR_NONE }; //avião
+cvar_t	sv_aim = {"sv_aim", "0.75", CVAR_NONE};
 static void PF_aim (void)
 {
 	edict_t	*ent, *check, *bestent;
@@ -1515,7 +1517,7 @@ static void PF_aim (void)
 	VectorCopy (ent->v.origin, start);
 	start[2] += 20;
 
-// try sending a trace straight
+	// try sending a trace straight
 	VectorCopy (pr_global_struct->v_forward, dir);
 	VectorMA (start, 2048, dir, end);
 	tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
@@ -1526,15 +1528,17 @@ static void PF_aim (void)
 		return;
 	}
 
-// try all possible entities
+	// try all possible entities
 	VectorCopy (dir, bestdir);
 
-	if (sv_aim.value < 0.5)
-		Cvar_SetQuick(&sv_aim, "0.5");
-	if (sv_aim.value > 1.0)
-		Cvar_SetQuick(&sv_aim, "1.0");
+	float aim = sv_enable_aim.value == 0 ? 1.0 : sv_aim.value;
 
-	bestdist = sv_aim.value;
+	if (aim < 0.5)
+		aim = 0.5;
+	if (aim > 1.0)
+		aim = 1.0;
+
+	bestdist = aim;
 	bestent = NULL;
 
 	check = NEXT_EDICT(qcvm->edicts);
