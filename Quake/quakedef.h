@@ -163,7 +163,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define STAT_PUNCHVECTOR_Y	30
 #define STAT_PUNCHVECTOR_Z	31
 
-//avi„o
+//avi√£o
 #define STAT_CURRENT_WEAPON 32
 #define STAT_DASH_INDEX 33
 #define STAT_DASH_PERC 34
@@ -513,9 +513,11 @@ typedef struct server_alias_s // woods #serveralias
 
 #endif	/* QUAKEDEFS_H */
 
-//avi„o:
+//avi√£o:
 void GetUserConfigDir(char* config_dir);
 void GetSaveDir(char* save_dir, char* saved_games_dir);
+qboolean Curl_DownloadFile (const char* url, const char* filename, const char* local_path);
+void LOC_LoadFile (const char *file);
 
 extern qboolean horde_map;
 

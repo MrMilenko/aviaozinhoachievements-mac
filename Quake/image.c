@@ -88,7 +88,7 @@ static byte *Image_LoadSTBI(FILE *f, int *width, int *height)
 	fclose(f);
 	if (heap)
 	{	
-		//avi„o: this was causing issues where we lose track of the hunk memory
+		//avi√£o: this was causing issues where we lose track of the hunk memory
 		//this is silly, but we do it for consistency.
 		//frankly, most people should be using tga-inside-pk3.
 		//byte *hunk = Hunk_Alloc(*width**height*4);
@@ -103,9 +103,9 @@ static byte *Image_LoadSTBI(FILE *f, int *width, int *height)
 byte *Image_LoadPNG(FILE *f, int *width, int *height, qboolean *malloced)
 {
 #ifdef LODEPNG_NO_COMPILE_DECODER
-	//avi„o - using malloc for stbi
+	//avi√£o - using malloc for stbi
 	byte* data = Image_LoadSTBI (f, width, height);
-	malloced = data != NULL;
+	*malloced = data != NULL;
 	return data;
 #else
 	unsigned w, h;

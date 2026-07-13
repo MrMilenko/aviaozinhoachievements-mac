@@ -9,3 +9,5 @@ Windows/VisualStudio/UpgradeLog.htm
 
 # macOS
 .DS_Store
+/build/
+/Build/

@@ -206,11 +206,11 @@ int CFG_OpenConfig(const char* cfg_name)
 
 	CFG_CloseConfig();
 
-	// avi„o - user config folder
+	// avi√£o - user config folder
 	char config_dir[MAX_PATH];
 	GetUserConfigDir(config_dir);
 	char config_file[MAX_PATH];
-	snprintf(config_file, MAX_PATH, "%s\\%s", config_dir, cfg_name);
+	snprintf(config_file, MAX_PATH, "%s/%s", config_dir, cfg_name);
 	f = fopen(config_file, "rb");
 	if (f) {
 		fseek(f, 0, SEEK_END);

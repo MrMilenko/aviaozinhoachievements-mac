@@ -302,7 +302,7 @@ void     M_Language_Mousemove(int cx, int cy);
 
 int gameover_cursor;
 
-// avi„o
+// avi√£o
 qboolean m_skill_from_newgame;
 
 //gltexture_t* lore_textures[256];
@@ -714,7 +714,7 @@ void M_PrintHighlight(int x, int y, const char* str, const char* search, int sea
 
 	for (i = 0; i < searchlen && match[i]; i++) // Print matching part highlighted
 	{
-		Uint32 codepoint = utf8_decode_nth(match, i, strlen);
+		Uint32 codepoint = utf8_decode_nth(match, i, strlen(match));
 		M_DrawCharacter(x + (pos + i) * 8, y, codepoint);
 	}
 
@@ -1974,7 +1974,7 @@ void M_SinglePlayer_Key(int key)
 			if (sv.active)
 				if (!SCR_ModalMessage(LOC_GetString("$msg_are_you_sure_new"), 0.0f))
 					break;
-			// avi„o
+			// avi√£o
 			m_skill_from_newgame = true;
 			M_Menu_Skill_f();
 			break;
@@ -2080,7 +2080,7 @@ void M_ScanSaves(void)
 	struct stat st;
 #endif
 
-	// avi„o
+	// avi√£o
 	char save_dir[MAX_PATH];
 	GetSaveDir(save_dir, NULL);
 
@@ -2093,7 +2093,7 @@ void M_ScanSaves(void)
 		save_entries[i].original_index = i;
 		q_strlcpy(save_entries[i].mapname, "", sizeof(save_entries[i].mapname));
 
-		// avi„o
+		// avi√£o
 		q_snprintf(name, sizeof(name), "%s/s%i.sav", save_dir, i); // legacy
 		f = fopen(name, "r");
 
@@ -2621,7 +2621,7 @@ void M_Maps_Key(int key)
 			}
 			else
 			{
-				// avi„o
+				// avi√£o
 				m_skill_from_newgame = false;
 				// Original behavior - go to skill menu
 				M_SetSkillMenuMap(mapsmenu.items[mapsmenu.filtered_indices[mapsmenu.list.cursor]].name);
@@ -2970,12 +2970,12 @@ int	m_multiplayer_cursor;
 #define	MULTIPLAYER_ITEMS	3
 extern cvar_t scr_shownet; // woods
 
-//avi„o
+//avi√£o
 int lanConfig_steam_server = 1;
 
 void M_Menu_MultiPlayer_f(void)
 {
-	//avi„o
+	//avi√£o
 	lanConfig_steam_server = 1;
 	key_dest = key_menu;
 	m_state = m_multiplayer;
@@ -3093,7 +3093,7 @@ void M_MultiPlayer_Key(int key)
 		{
 		case 0:
 			if (ipxAvailable || ipv4Available || ipv6Available) {
-				// avi„o
+				// avi√£o
 				lanConfig_steam_server = 0;
 				M_Menu_LanConfig_f(); // woods #skipipx
 			}
@@ -3223,7 +3223,7 @@ void M_AllMods_Mousemove(int cx, int cy) // woods #mousemenu
 /*
 /*
 ==================
-Languages (avi„o)
+Languages (avi√£o)
 ==================
 */
 
@@ -6062,7 +6062,7 @@ void M_Mouse_Draw(void)
 
 #ifdef MACOS_X_ACCELERATION_HACK
 		case MOUSE_ACCELERATION:
-			text = LOC_GetString("$menu_mouse_acceleration"));
+			text = LOC_GetString("$menu_mouse_acceleration");
 			M_DrawCheckbox(178, y, !in_disablemacosxmouseaccel.value);
 			break;
 #endif
@@ -7412,7 +7412,7 @@ static enum game_e
 	GAME_VIEWMODEL,      // Added
 	GAME_TEAMCOLOR,  // Added
 	GAME_ENEMYCOLOR, // Added
-	GAME_AUTOAIM, //avi„o
+	GAME_AUTOAIM, //avi√£o
 	GAME_COUNT,
 } game_cursor;
 
@@ -11666,7 +11666,7 @@ void M_LanConfig_Draw(void)
 
 	y = 52;
 
-	//avi„o
+	//avi√£o
 	if (StartingGame) {
 		M_Print(basex, y, LOC_GetString("$menu_steam_server"));
 		const char* steamServerDescription = lanConfig_steam_server == 0 ? LOC_GetString("$no") : LOC_GetString("$yes");
@@ -12005,15 +12005,15 @@ void M_LanConfig_Key(int key)
 		else
 		{
 			if (lanConfig_cursor == 1) {
-				Cbuf_AddText("steamserver 0"); //avi„o
+				Cbuf_AddText("steamserver 0"); //avi√£o
 				M_Menu_Search_f(SLIST_LAN);
 			}
 			else if (lanConfig_cursor == 2) {
-				Cbuf_AddText("steamserver 0"); //avi„o
+				Cbuf_AddText("steamserver 0"); //avi√£o
 				M_Menu_Search_f(SLIST_INTERNET);
 			}
 			else if (lanConfig_cursor == 3) {
-				Cbuf_AddText("steamserver 1"); //avi„o
+				Cbuf_AddText("steamserver 1"); //avi√£o
 				M_Menu_Search_f(SLIST_INTERNET);
 			}
 			else if (lanConfig_cursor == 4) // woods #historymenu
@@ -12890,7 +12890,7 @@ void M_LanConfig_Mousemove(int cx, int cy)
 	}
 
 	// If not over IPs, handle regular menu cursor movement
-	// avi„o
+	// avi√£o
 	int numCommands = StartingGame ? !lanConfig_steam_server ? NUM_LANCONFIG_CMDS_NEWGAME : 2 : NUM_LANCONFIG_CMDS_JOINGAME;
 	int* subCursor_ptr = StartingGame && lanConfig_steam_server ? lanConfig_cursor_table_steamnewgame : lanConfig_cursor_ptr;
 	M_UpdateCursorWithTable(cy, subCursor_ptr, numCommands, &lanConfig_cursor);
@@ -13970,7 +13970,7 @@ void RemoveDuplicateServers(servertitem_t** items, int* actualServerCount)
 
 extern cvar_t steamserver;
 
-// avi„o
+// avi√£o
 void GNS_FetchServerList(servertitem_t** items, int* actualServerCount) {
 	Pipe_Write("server_list");
 	if (Pipe_Read()) {
@@ -13984,7 +13984,7 @@ void FetchAndSortServers(void)
 	serversmenu.items = NULL;
 	int actualServerCount = 0;
 
-	// avi„o
+	// avi√£o
 	if (steamserver.value) {
 		GNS_FetchServerList(&serversmenu.items, &actualServerCount);
 	}
@@ -15290,7 +15290,7 @@ void M_Menu_Credits_f(void)
 
 void M_Menu_SearchInternet_f(void) // woods
 {
-	Cbuf_AddText("steamserver 0"); //avi„o
+	Cbuf_AddText("steamserver 0"); //avi√£o
 	M_Menu_Search_f(SLIST_INTERNET);
 }
 
