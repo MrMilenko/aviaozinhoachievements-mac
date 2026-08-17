@@ -238,6 +238,11 @@ pipe_bool_t Pipe_ConnectToExisting (void)
 	}
 
 	pipe_handle = &pipe_fd;
+
+	/* Nothing in the engine calls Pipe_Close, and unlike a Win32 named pipe the
+	   socket file outlives the process, so clean it up on exit. */
+	atexit (Pipe_Close);
+
 	return TRUE;
 }
 
