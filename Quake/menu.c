@@ -475,12 +475,12 @@ void M_PrintWhite(int cx, int cy, const char* str)
 
 void M_DrawTransPic(int x, int y, qpic_t* pic)
 {
-	Draw_Pic(x, y, pic); //johnfitz -- simplified becuase centering is handled elsewhere
+	Draw_Pic(x, y, pic); //johnfitz, simplified becuase centering is handled elsewhere
 }
 
 void M_DrawPic(int x, int y, qpic_t* pic)
 {
-	Draw_Pic(x, y, pic); //johnfitz -- simplified becuase centering is handled elsewhere
+	Draw_Pic(x, y, pic); //johnfitz, simplified becuase centering is handled elsewhere
 }
 
 void M_DrawSubpic(int x, int y, qpic_t* pic, int left, int top, int width, int height) // woods #modsmenu (iw)
@@ -492,9 +492,9 @@ void M_DrawSubpic(int x, int y, qpic_t* pic, int left, int top, int width, int h
 	Draw_SubPic(x, y, width, height, pic, s1, t1, s2, t2);
 }
 
-void M_DrawTransPicTranslate(int x, int y, qpic_t* pic, plcolour_t top, plcolour_t bottom) //johnfitz -- more parameters
+void M_DrawTransPicTranslate(int x, int y, qpic_t* pic, plcolour_t top, plcolour_t bottom) //johnfitz, more parameters
 {
-	Draw_TransPicTranslate(x, y, pic, top, bottom); //johnfitz -- simplified becuase centering is handled elsewhere
+	Draw_TransPicTranslate(x, y, pic, top, bottom); //johnfitz, simplified becuase centering is handled elsewhere
 }
 
 void M_DrawTextBox(int x, int y, int width, int lines)
@@ -644,7 +644,7 @@ void M_DrawEllipsisBar(int x, int y, int cols) // woods #modsmenu (iw)
 }
 
 //=============================================================================
-/* Scrolling ticker -- woods #modsmenu #demosmenu (iw)*/
+/* Scrolling ticker, woods #modsmenu #demosmenu (iw)*/
 
 typedef struct
 {
@@ -2040,7 +2040,7 @@ Load/Save Menu
 
 int		load_cursor;		// 0 < load_cursor < MAX_SAVEGAMES
 
-#define	MAX_SAVEGAMES		20	/* johnfitz -- increased from 12 */
+#define	MAX_SAVEGAMES		20	/* johnfitz, increased from 12 */
 char	m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH + 1];
 int		loadable[MAX_SAVEGAMES];
 
@@ -2938,7 +2938,7 @@ void M_AutoAim_Key(int key)
 		Cbuf_AddText("coop 0\n"); //johnfitz
 		if (m_skill_from_newgame)
 		{
-			Cbuf_AddText("samelevel 0\n"); //spike -- you'd be amazed how many qw players have this setting breaking their singleplayer experience...
+			Cbuf_AddText("samelevel 0\n"); //spike, you'd be amazed how many qw players have this setting breaking their singleplayer experience...
 			Cbuf_AddText("startmap_sp\n");
 		}
 		else
@@ -3567,7 +3567,7 @@ void M_Menu_Setup_f(void)
 qboolean chasewasnotactive; // woods #3rdperson
 qboolean flyme; // woods #3rdperson
 
-void M_DrawColorBar_Top(int x, int y, int highlight) // woods #colorbar -- mh
+void M_DrawColorBar_Top(int x, int y, int highlight) // woods #colorbar, mh
 {
 	int i;
 	int intense = highlight * 16 + (highlight < 8 ? 11 : 4);
@@ -3598,7 +3598,7 @@ void M_DrawColorBar_Top(int x, int y, int highlight) // woods #colorbar -- mh
 	}
 }
 
-void M_DrawColorBar_Bot(int x, int y, int highlight) // woods #colorbar -- mh
+void M_DrawColorBar_Bot(int x, int y, int highlight) // woods #colorbar, mh
 {
 	int i;
 	int intense = highlight * 16 + (highlight < 8 ? 11 : 4);
@@ -4851,7 +4851,7 @@ static int numbindnames = 0; // woods #mousemenu
 
 qboolean	bind_grab;
 
-void M_Keys_Populate(void) // woods #mousemenu -- modified 
+void M_Keys_Populate(void) // woods #mousemenu, modified 
 {
 	FILE* file;
 	char line[1024];
@@ -11452,7 +11452,7 @@ qboolean M_Quit_TextEntry(void)
 }
 
 
-void M_Quit_Draw(void) //johnfitz -- modified for new quit message -- woods modified for match quit warning #matchquit
+void M_Quit_Draw(void) //johnfitz, modified for new quit message, woods modified for match quit warning #matchquit
 {
 	const char* msg1 = LOC_GetString("$msg_you_are_currently_a_match_participant");
 	const char* msg2 = LOC_GetString("$msg_quiting_will_disrupt_the_match"); /* msg2/msg3 are [38] at most */
@@ -13067,7 +13067,7 @@ int gameoptions_cursor_table[] = { 40, 56, 64, 72, 80, 88, 96, 104, 120, 128, 15
 #define	NUM_GAMEOPTIONS	11
 int		gameoptions_cursor;
 
-qboolean HasBots(void) // woods -- check if deathmatch needs difficulty #botdetect
+qboolean HasBots(void) // woods, check if deathmatch needs difficulty #botdetect
 {
 	if (!progs_check_done)
 	{
@@ -13822,6 +13822,16 @@ static size_t WriteMemoryCallback(void* contents, size_t size, size_t nmemb, voi
 void setStatusFlagBasedOnTimestamp(const char* timestamp, const char* lastQuery, qboolean* status)
 {
 	char bufTimestamp[20], bufLastQuery[20]; // Extract time components up to seconds
+
+	// milenko #macport, these come straight from JSON_FindString, which returns NULL when
+	// the field is absent or not a string. This runs before the caller's NULL checks, so
+	// a malformed launcher reply used to Q_strncpy from address 0 and kill the client.
+	if (!timestamp || !lastQuery)
+	{
+		*status = false;
+		return;
+	}
+
 	Q_strncpy(bufTimestamp, timestamp, 19);
 	bufTimestamp[19] = '\0';
 	Q_strncpy(bufLastQuery, lastQuery, 19);
@@ -14227,6 +14237,8 @@ void M_ServerList_Key(int key)
 	case K_KP_ENTER:
 	case K_ABUTTON:
 	enter:
+		if (serversmenu.list.numitems <= 0 || serversmenu.list.cursor < 0)
+			break;
 		m_return_state = m_state;
 		m_return_onerror = true;
 		key_dest = key_game;
@@ -15482,7 +15494,7 @@ void M_Init(void)
 void M_Draw(void)
 {
 	if (cls.menu_qcvm.extfuncs.m_draw)
-	{	//Spike -- menuqc
+	{	//Spike, menuqc
 		float s = q_min((float)glwidth / 320.0, (float)glheight / 200.0);
 		s = CLAMP(1.0, scr_menuscale.value, s);
 		if (!host_initialized)
@@ -15532,7 +15544,7 @@ void M_Draw(void)
 		}
 
 		if (m_state != m_crosshair && !scr_con_current)
-			Draw_FadeScreen(); //johnfitz -- fade even if console fills screen
+			Draw_FadeScreen(); //johnfitz, fade even if console fills screen
 	}
 	else
 	{

@@ -70,9 +70,33 @@ net_driver_t net_drivers[] =
 const int net_numdrivers = (sizeof(net_drivers) / sizeof(net_drivers[0]));
 
 #include "net_udp.h"
+#include "net_gns.h"
 
 net_landriver_t	net_landrivers[] =
 {
+	{	"GNS",
+		false,
+		0,
+		GNS_Init,
+		GNS_Shutdown,
+		GNS_Listen,
+		GNS_GetAddresses,
+		GNS_OpenSocket,
+		GNS_CloseSocket,
+		GNS_Connect,
+		GNS_CheckNewConnections,
+		GNS_Read,
+		GNS_Write,
+		GNS_Broadcast,
+		GNS_AddrToString,
+		GNS_StringToAddr,
+		GNS_GetSocketAddr,
+		GNS_GetNameFromAddr,
+		GNS_GetAddrFromName,
+		GNS_AddrCompare,
+		GNS_GetSocketPort,
+		GNS_SetSocketPort
+	},
 	{	"UDP",
 		false,
 		0,

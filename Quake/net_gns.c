@@ -6,6 +6,7 @@
 
 #include "net_gns.h"
 #include "GNSInterface.h"
+#include "pipe.h"
 
 extern cvar_t sv_public;
 extern cvar_t steamserver;
@@ -21,6 +22,16 @@ static char gns_last_hostname[256] = "";
 
 sys_socket_t GNS_Init(void)
 {
+	/* milenko #macport, attach to the launcher before anything asks the pipe for our
+	   steam id or a server list. Nothing in this tree ever set pipe_available, so the
+	   engine could never talk to the launcher on any platform. If no launcher is
+	   listening we just stay at 0, which is the old behaviour. */
+	if (!pipe_available && Pipe_ConnectToExisting())
+	{
+		pipe_available = 1;
+		Con_SafePrintf("GNS: attached to launcher on %s\n", PIPE_NAME);
+	}
+
 	gns_controlsocket = GNS_OpenSocket(0);
 	if (gns_controlsocket == INVALID_SOCKET)
 	{

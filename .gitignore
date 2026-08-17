@@ -11,3 +11,11 @@ Windows/VisualStudio/UpgradeLog.htm
 .DS_Store
 /build/
 /Build/
+/build-*/
+/Build-*/
+
+# macOS launcher build artifacts (Steamworks redistributable is not ours to ship)
+/Mac/launcher/launcher_mac
+/Mac/launcher/libsteam_api.dylib
+/Mac/launcher/steam_appid.txt
+/Mac/launcher/*.log

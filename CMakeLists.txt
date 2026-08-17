@@ -44,6 +44,19 @@ else()
     set(QS_DEFAULT_SIGNAL_URL "wss://aviaozinho.duckdns.org/")
 endif()
 
+if(APPLE)
+    # milenko #macport, PIPE_NAME is an AF_UNIX socket path here, not a Win32 pipe name.
+    # /tmp rather than $TMPDIR so the engine and the launcher agree on one rendezvous
+    # point. Stays well inside sun_path's 104-byte limit once the pid suffix is added.
+    if(QS_BDD_PRE_4)
+        set(QS_DEFAULT_PIPE_NAME "/tmp/Aviaozinho35")
+    elseif(QS_FLESH)
+        set(QS_DEFAULT_PIPE_NAME "/tmp/Flesh")
+    else()
+        set(QS_DEFAULT_PIPE_NAME "/tmp/Aviaozinho")
+    endif()
+endif()
+
 set(QS_COMMON_SOURCES
     Quake/bgmusic.c
     Quake/cd_sdl.c
@@ -149,6 +162,8 @@ set(QS_MAC_SOURCES
     Mac/pl_osx.m
     Mac/sys_sdl_unix.c
     Mac/main_osx.c
+    Quake/net_gns.c
+    Quake/GNSInterface.cpp
 )
 
 if(WIN32)
@@ -213,8 +228,10 @@ if(APPLE)
         qs_brew_prefix(QS_MAD_PREFIX mad)
         qs_brew_prefix(QS_XMP_PREFIX libxmp)
         qs_brew_prefix(QS_CURL_PREFIX curl)
+        qs_brew_prefix(QS_NLOHMANN_PREFIX nlohmann-json)
 
         target_include_directories(quakespasm PRIVATE
+            "${QS_NLOHMANN_PREFIX}/include"
             "${QS_SDL2_PREFIX}/include/SDL2"
             "${QS_SDL2_TTF_PREFIX}/include/SDL2"
             "${QS_FLAC_PREFIX}/include"
@@ -253,9 +270,21 @@ if(APPLE)
         )
     endif()
 
+    # libdatachannel is not in Homebrew either way, point this at a built checkout
+    set(QS_LIBDATACHANNEL_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../libdatachannel"
+        CACHE PATH "Root of a built libdatachannel checkout")
+
+    target_include_directories(quakespasm PRIVATE "${QS_LIBDATACHANNEL_DIR}/include")
+    target_link_directories(quakespasm PRIVATE "${QS_LIBDATACHANNEL_DIR}/build")
+
     target_compile_definitions(quakespasm PRIVATE GL_SILENCE_DEPRECATION=1)
 
+    set_target_properties(quakespasm PROPERTIES
+        BUILD_RPATH "${QS_LIBDATACHANNEL_DIR}/build"
+    )
+
     target_link_libraries(quakespasm PRIVATE
+        datachannel
         SDL2
         SDL2_ttf
         vorbisfile

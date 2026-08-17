@@ -17,10 +17,26 @@
 #include "quakedef.h"
 #include "net_defs.h"
 #include "pipe.h"
+// milenko #macport, quakedef.h defines bound(a,b,c); libdatachannel names a lambda capture
+// 'bound' in rtc/utils.hpp, so the macro eats it. We don't use the clamp macro here.
+#undef bound
+// common.h poisons strcasecmp to 'brokeninmsvc' to push Quake code at q_strcasecmp.
+// We can't call q_strcasecmp from C++ (no extern "C"), and on POSIX the real one exists.
+#ifndef _WIN32
+#undef strcasecmp
+#undef strncasecmp
+#endif
 #include "rtc/rtc.hpp"
 #include <nlohmann/json.hpp>
+#ifdef _WIN32
 #include <windows.h>
 #include <shellapi.h>
+#else
+#include <cstdlib>
+#include <strings.h>
+#include <crt_externs.h>	// milenko #macport, _NSGetArgv, the argv equivalent of GetCommandLineW
+#define _strtoui64(s,e,b)	strtoull((s), (e), (b))
+#endif
 
 extern "C" {
 	extern char pipe_available;
@@ -141,7 +157,12 @@ std::mutex outgoingPacketsMutex;
 
 static inline uint64_t nowMs()
 {
+#ifdef _WIN32
 	return (uint64_t)GetTickCount64();
+#else
+	return (uint64_t)std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::steady_clock::now().time_since_epoch()).count();
+#endif
 }
 
 static inline void _dbgPrint(const char* tag, const char* fmt, ...)
@@ -546,10 +567,14 @@ extern "C" {
 		const size_t prefix_len = strlen(GNS_PREFIX);
 		if (strncmp(string, GNS_PREFIX, prefix_len) != 0) { return -1; }
 		const char* token = string + prefix_len;
-		if (!isAllDigits(token)) { return -1; }
 		char* endptr = NULL;
 		uint64_t steamId = _strtoui64(token, &endptr, 10);
-		if (endptr == token || (endptr && *endptr != '\0') || steamId == 0) { return -1; }
+		// milenko #macport, the browser hands us "steam-conn|<id>:<port>", because
+		// populateServersFromJSON always appends ":%d". validSteamId() accepts that form,
+		// so accept it here too; the old isAllDigits() check rejected the colon and the
+		// address fell through to the UDP landriver, which cannot route it.
+		if (endptr == token || steamId == 0) { return -1; }
+		if (*endptr != '\0' && *endptr != ':') { return -1; }
 		encodeSteamId(addr, steamId);
 		return 0;
 	}
@@ -557,6 +582,7 @@ extern "C" {
 	bool tryGetSteamIdFromCmd(uint64_t& outSteamId)
 	{
 		outSteamId = 0;
+#ifdef _WIN32
 		int argc = 0;
 		LPWSTR* wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
 		if (!wargv) return false;
@@ -572,6 +598,22 @@ extern "C" {
 		}
 		LocalFree(wargv);
 		return false;
+#else
+		/* milenko #macport, read the process argv directly; quakedef.h has no extern "C"
+		   wrapper, so calling COM_CheckParm from this C++ TU would not link. */
+		int    argc = *_NSGetArgc();
+		char** argv = *_NSGetArgv();
+		if (!argv) return false;
+		for (int i = 0; i + 1 < argc; ++i)
+		{
+			if (argv[i] && strcasecmp(argv[i], "-steamid") == 0)
+			{
+				outSteamId = strtoull(argv[i + 1], nullptr, 10);
+				return outSteamId != 0;
+			}
+		}
+		return false;
+#endif
 	}
 
 	int gns_init(void)
