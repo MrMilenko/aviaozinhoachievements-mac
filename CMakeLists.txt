@@ -192,53 +192,66 @@ if(QS_BDD_PRE_4)
 endif()
 
 if(APPLE)
-    function(qs_brew_prefix out_var formula)
-        execute_process(
-            COMMAND brew --prefix ${formula}
-            OUTPUT_VARIABLE _qs_prefix
-            OUTPUT_STRIP_TRAILING_WHITESPACE
+    find_program(HOMEBREW_EXECUTABLE brew)
+    if(HOMEBREW_EXECUTABLE)
+        function(qs_brew_prefix out_var formula)
+            execute_process(
+                COMMAND brew --prefix ${formula}
+                OUTPUT_VARIABLE _qs_prefix
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+            )
+            set(${out_var} "${_qs_prefix}" PARENT_SCOPE)
+        endfunction()
+
+        qs_brew_prefix(QS_SDL2_PREFIX sdl2)
+        qs_brew_prefix(QS_SDL2_TTF_PREFIX sdl2_ttf)
+        qs_brew_prefix(QS_FLAC_PREFIX flac)
+        qs_brew_prefix(QS_VORBIS_PREFIX libvorbis)
+        qs_brew_prefix(QS_OPUS_PREFIX opus)
+        qs_brew_prefix(QS_OPUSFILE_PREFIX opusfile)
+        qs_brew_prefix(QS_OGG_PREFIX libogg)
+        qs_brew_prefix(QS_MAD_PREFIX mad)
+        qs_brew_prefix(QS_XMP_PREFIX libxmp)
+        qs_brew_prefix(QS_CURL_PREFIX curl)
+
+        target_include_directories(quakespasm PRIVATE
+            "${QS_SDL2_PREFIX}/include/SDL2"
+            "${QS_SDL2_TTF_PREFIX}/include/SDL2"
+            "${QS_FLAC_PREFIX}/include"
+            "${QS_VORBIS_PREFIX}/include"
+            "${QS_OPUS_PREFIX}/include/opus"
+            "${QS_OPUS_PREFIX}/include"
+            "${QS_OPUSFILE_PREFIX}/include/opus"
+            "${QS_OPUSFILE_PREFIX}/include"
+            "${QS_OGG_PREFIX}/include"
+            "${QS_MAD_PREFIX}/include"
+            "${QS_XMP_PREFIX}/include"
+            "${QS_CURL_PREFIX}/include"
         )
-        set(${out_var} "${_qs_prefix}" PARENT_SCOPE)
-    endfunction()
 
-    qs_brew_prefix(QS_SDL2_PREFIX sdl2)
-    qs_brew_prefix(QS_SDL2_TTF_PREFIX sdl2_ttf)
-    qs_brew_prefix(QS_FLAC_PREFIX flac)
-    qs_brew_prefix(QS_VORBIS_PREFIX libvorbis)
-    qs_brew_prefix(QS_OPUS_PREFIX opus)
-    qs_brew_prefix(QS_OPUSFILE_PREFIX opusfile)
-    qs_brew_prefix(QS_OGG_PREFIX libogg)
-    qs_brew_prefix(QS_MAD_PREFIX mad)
-    qs_brew_prefix(QS_XMP_PREFIX libxmp)
-    qs_brew_prefix(QS_CURL_PREFIX curl)
+        target_link_directories(quakespasm PRIVATE
+            "${QS_SDL2_PREFIX}/lib"
+            "${QS_SDL2_TTF_PREFIX}/lib"
+            "${QS_FLAC_PREFIX}/lib"
+            "${QS_VORBIS_PREFIX}/lib"
+            "${QS_OPUS_PREFIX}/lib"
+            "${QS_OPUSFILE_PREFIX}/lib"
+            "${QS_OGG_PREFIX}/lib"
+            "${QS_MAD_PREFIX}/lib"
+            "${QS_XMP_PREFIX}/lib"
+            "${QS_CURL_PREFIX}/lib"
+        )
+    else()
+        target_include_directories(quakespasm PRIVATE
+            "${QS_PREFIX}/include/SDL2"
+            "${QS_PREFIX}/include"
+            "${QS_PREFIX}/include/opus"
+        )
 
-    target_include_directories(quakespasm PRIVATE
-        "${QS_SDL2_PREFIX}/include/SDL2"
-        "${QS_SDL2_TTF_PREFIX}/include/SDL2"
-        "${QS_FLAC_PREFIX}/include"
-        "${QS_VORBIS_PREFIX}/include"
-        "${QS_OPUS_PREFIX}/include/opus"
-        "${QS_OPUS_PREFIX}/include"
-        "${QS_OPUSFILE_PREFIX}/include/opus"
-        "${QS_OPUSFILE_PREFIX}/include"
-        "${QS_OGG_PREFIX}/include"
-        "${QS_MAD_PREFIX}/include"
-        "${QS_XMP_PREFIX}/include"
-        "${QS_CURL_PREFIX}/include"
-    )
-
-    target_link_directories(quakespasm PRIVATE
-        "${QS_SDL2_PREFIX}/lib"
-        "${QS_SDL2_TTF_PREFIX}/lib"
-        "${QS_FLAC_PREFIX}/lib"
-        "${QS_VORBIS_PREFIX}/lib"
-        "${QS_OPUS_PREFIX}/lib"
-        "${QS_OPUSFILE_PREFIX}/lib"
-        "${QS_OGG_PREFIX}/lib"
-        "${QS_MAD_PREFIX}/lib"
-        "${QS_XMP_PREFIX}/lib"
-        "${QS_CURL_PREFIX}/lib"
-    )
+        target_link_directories(quakespasm PRIVATE
+            "${QS_PREFIX}/lib"
+        )
+    endif()
 
     target_compile_definitions(quakespasm PRIVATE GL_SILENCE_DEPRECATION=1)
 
