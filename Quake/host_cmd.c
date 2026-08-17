@@ -33,6 +33,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _WIN32
 #include <dirent.h>
 
+// milenko #macport, GNSInterface.cpp is compiled on macOS now and defines the real
+// validSteamId; this fallback is only for non-Windows builds without GNS.
+#ifndef __APPLE__
 #define GNS_PREFIX "steam-conn|"
 
 qboolean validSteamId(const char* address)
@@ -50,6 +53,9 @@ qboolean validSteamId(const char* address)
 	while (*p >= '0' && *p <= '9') p++;
 	return (*p == '\0');
 }
+#else
+qboolean validSteamId(const char* address);	// implemented in GNSInterface.cpp
+#endif	// !__APPLE__
 #endif
 
 extern cvar_t	pausable;
@@ -64,7 +70,7 @@ double		mpservertime;	// woods #servertime
 extern		char afk_name[16]; // woods #smartafk
 
 cvar_t sv_adminnick = { "sv_adminnick", "server admin", CVAR_ARCHIVE }; // woods (darkpaces) #adminnick
-extern char lastconnected[3]; // woods -- #identify+
+extern char lastconnected[3]; // woods, #identify+
 extern qboolean ctrlpressed; // woods #saymodifier
 extern qboolean Valid_IP(const char* ip_str); // woods #icmp
 extern qboolean Valid_Domain(const char* domain_str); // woods #icmp
@@ -97,7 +103,7 @@ void Host_Quit_f(void)
 }
 
 //==============================================================================
-//johnfitz -- extramaps management
+//johnfitz, extramaps management
 //==============================================================================
 
 /*
@@ -144,7 +150,7 @@ void FileList_Add(const char* name, const char* data, filelist_item_t** list) //
 
 /*
 ==================
-FileList_Subtract -- woods
+FileList_Subtract, woods
 ==================
 */
 void FileList_Subtract(const char* name, filelist_item_t** list)
@@ -250,7 +256,7 @@ void ExtraMaps_Init(void)
 					COM_StripExtension(pak->files[i].name + 5, mapname, sizeof(mapname));
 
 					if (pak->files[i].filelen > 32 * 1024 && !isSpecialMap(mapname))
-					{ // don't list files under 32k (ammo boxes etc) or certain names (ex. authmdl are larger) -- woods
+					{ // don't list files under 32k (ammo boxes etc) or certain names (ex. authmdl are larger), woods
 						ExtraMaps_Add(mapname);
 					}
 				}
@@ -273,7 +279,7 @@ void ExtraMaps_NewGame(void)
 }
 
 //==============================================================================
-// woods -- worldspawn map description support #mapdescriptions
+// woods, worldspawn map description support #mapdescriptions
 //==============================================================================
 
 #define	MAXDESC	50
@@ -611,7 +617,7 @@ static void Host_Maps_f(void) // prints worldspawn map description
 }
 
 //==============================================================================
-// woods -- FolderList id1 directories management for open cmd #folderlist
+// woods, FolderList id1 directories management for open cmd #folderlist
 //==============================================================================
 
 filelist_item_t* folderlist;
@@ -695,7 +701,7 @@ void FolderList_Init(void)
 #endif
 
 //==============================================================================
-//johnfitz -- modlist management
+//johnfitz, modlist management
 //==============================================================================
 
 filelist_item_t* modlist;
@@ -769,7 +775,7 @@ void Modlist_Init(void)
 #endif
 
 //==============================================================================
-// woods -- server list management #serverlist
+// woods, server list management #serverlist
 //==============================================================================
 
 filelist_item_t* serverlist;
@@ -818,7 +824,7 @@ void ServerList_Init(void)
 }
 
 //==============================================================================
-// woods -- bookmarks list management #bookmarksmenu
+// woods, bookmarks list management #bookmarksmenu
 //==============================================================================
 
 filelist_item_t* bookmarkslist;
@@ -868,7 +874,7 @@ void BookmarksList_Init(void)
 }
 
 //==============================================================================
-// woods -- exec list management (adapted from demolist) #execlist
+// woods, exec list management (adapted from demolist) #execlist
 //			search in id1, configs, aliases, names folders
 //==============================================================================
 
@@ -1079,7 +1085,7 @@ void ExecList_Init(void)
 }
 
 //==============================================================================
-// woods -- r_particledesc completion #particlelist
+// woods, r_particledesc completion #particlelist
 //==============================================================================
 
 filelist_item_t* particlelist;
@@ -1179,7 +1185,7 @@ void ParticleList_Init(void)
 }
 
 //==============================================================================
-//ericw -- demo list management
+//ericw, demo list management
 //==============================================================================
 
 filelist_item_t* demolist;
@@ -1310,7 +1316,7 @@ void DemoList_Init(void)
 }
 
 //==============================================================================
-//woods -- sky list management #skylist
+//woods, sky list management #skylist
 //==============================================================================
 
 filelist_item_t* skylist;
@@ -1421,7 +1427,7 @@ void SkyList_Init(void)
 }
 
 //==============================================================================
-// woods  -- music list management #musiclist
+// woods , music list management #musiclist
 //==============================================================================
 
 filelist_item_t* musiclist;
@@ -1519,7 +1525,7 @@ void MusicList_Init(void)
 }
 
 //==============================================================================
-//woods -- text list management #textlist
+//woods, text list management #textlist
 //==============================================================================
 
 filelist_item_t* textlist;
@@ -1691,7 +1697,7 @@ void TextList_Init(void)
 
 /*
 ==================
-Host_Mods_f -- johnfitz
+Host_Mods_f, johnfitz
 
 list all potential mod directories (contain either a pak file or a progs.dat)
 ==================
@@ -1714,7 +1720,7 @@ static void Host_Mods_f(void)
 
 /*
 =============
-Host_Mapname_f -- johnfitz
+Host_Mapname_f, johnfitz
 =============
 */
 static void Host_Mapname_f(void)
@@ -1774,13 +1780,13 @@ static void Host_Status_f(void)
 	for (i = 0; i < numaddresses; i++)
 	{
 		if (*addresses[i] == '[')
-			print_fn("ipv6:    %s\n", addresses[i]);	//Spike -- FIXME: we should really have ports displayed here or something
+			print_fn("ipv6:    %s\n", addresses[i]);	//Spike, FIXME: we should really have ports displayed here or something
 		else
-			print_fn("tcp/ip:  %s\n", addresses[i]);	//Spike -- FIXME: we should really have ports displayed here or something
+			print_fn("tcp/ip:  %s\n", addresses[i]);	//Spike, FIXME: we should really have ports displayed here or something
 	}
 #else
 	if (ipv4Available)
-		print_fn("tcp/ip:  %s\n", my_ipv4_address);	//Spike -- FIXME: we should really have ports displayed here or something
+		print_fn("tcp/ip:  %s\n", my_ipv4_address);	//Spike, FIXME: we should really have ports displayed here or something
 	if (ipv6Available)
 		print_fn("ipv6:    %s\n", my_ipv6_address);
 	if (ipxAvailable)
@@ -1853,7 +1859,7 @@ static void Host_God_f(void)
 	if (pr_global_struct->deathmatch)
 		return;
 
-	//johnfitz -- allow user to explicitly set god mode to on or off
+	//johnfitz, allow user to explicitly set god mode to on or off
 	switch (Cmd_Argc())
 	{
 	case 1:
@@ -1898,7 +1904,7 @@ static void Host_Notarget_f(void)
 	if (pr_global_struct->deathmatch)
 		return;
 
-	//johnfitz -- allow user to explicitly set notarget to on or off
+	//johnfitz, allow user to explicitly set notarget to on or off
 	switch (Cmd_Argc())
 	{
 	case 1:
@@ -1945,7 +1951,7 @@ static void Host_Noclip_f(void)
 	if (pr_global_struct->deathmatch)
 		return;
 
-	//johnfitz -- allow user to explicitly set noclip to on or off
+	//johnfitz, allow user to explicitly set noclip to on or off
 	switch (Cmd_Argc())
 	{
 	case 1:
@@ -2086,7 +2092,7 @@ static void Host_Fly_f(void)
 	if (pr_global_struct->deathmatch)
 		return;
 
-	//johnfitz -- allow user to explicitly set noclip to on or off
+	//johnfitz, allow user to explicitly set noclip to on or off
 	switch (Cmd_Argc())
 	{
 	case 1:
@@ -2122,7 +2128,7 @@ static void Host_Fly_f(void)
 
 /*
 ==================
-ICMP_Ping_Host -- woods #icmp
+ICMP_Ping_Host, woods #icmp
 ==================
 */
 #ifdef _WIN32
@@ -2232,7 +2238,7 @@ int ICMP_Ping_Host(const char* host)
 
 /*
 ==================
-Host_Ping_f -- woods add support for external ping command #icmp
+Host_Ping_f, woods add support for external ping command #icmp
 
 ==================
 */
@@ -2363,7 +2369,7 @@ static void Host_Map_f(void)
 
 	svs.serverflags = 0;			// haven't completed an episode yet
 	q_strlcpy(name, Cmd_Argv(1), sizeof(name));
-	// remove (any) trailing ".bsp" from mapname -- S.A.
+	// remove (any) trailing ".bsp" from mapname, S.A.
 	p = strstr(name, ".bsp");
 	if (p && p[4] == '\0')
 		*p = '\0';
@@ -2418,7 +2424,7 @@ static void Host_Map_f(void)
 	}
 #endif
 
-	if (cls.state != ca_dedicated) // woods -- try to download map
+	if (cls.state != ca_dedicated) // woods, try to download map
 	{
 		char mapPath[MAX_QPATH];
 
@@ -2548,7 +2554,7 @@ char* GetLastSavedFile(char* output, size_t output_size) {
 
 /*
 ==================
-Host_AutoLoad -- woods #autoload (iw)
+Host_AutoLoad, woods #autoload (iw)
 ==================
 */
 static qboolean Host_AutoLoad(void)
@@ -2618,7 +2624,7 @@ static void Host_Changelevel_f(void)
 		return;
 	}
 
-	/*//johnfitz -- check for client having map before anything else // woods disable this for SV_SpawnServer protection (added) #mapchangeprotect
+	/*//johnfitz, check for client having map before anything else // woods disable this for SV_SpawnServer protection (added) #mapchangeprotect
 	q_snprintf (level, sizeof(level), "maps/%s.bsp", Cmd_Argv(1));
 	if (!COM_FileExists(level, NULL))
 		Host_Error ("cannot find map %s", level);
@@ -2630,13 +2636,13 @@ static void Host_Changelevel_f(void)
 
 	key_dest = key_game;	// remove console or menu
 	if (cls.state != ca_dedicated)
-		IN_UpdateGrabs();	// -- S.A.
+		IN_UpdateGrabs();	//, S.A.
 
 	PR_SwitchQCVM(&sv.qcvm);
 	SV_SaveSpawnparms();
 	SV_SpawnServer(level);
 	PR_SwitchQCVM(NULL);
-	// also issue an error if spawn failed -- O.S.
+	// also issue an error if spawn failed, O.S.
 	if (!sv.active)
 		Host_Error("cannot run map %s", level);
 }
@@ -2871,7 +2877,7 @@ static void Host_Connect_f(void)
 		Host_ConnectToLastServer_f();
 	else
 	{
-		if ((((Valid_Domain(name)) || (Valid_IP(name))) && (Valid_Port(name))) || !q_strcasecmp(name, "local") || !q_strcasecmp(name, "localhost")) // woods #connectfilter -- avoid client lockup if possible
+		if ((((Valid_Domain(name)) || (Valid_IP(name))) && (Valid_Port(name))) || !q_strcasecmp(name, "local") || !q_strcasecmp(name, "localhost")) // woods #connectfilter, avoid client lockup if possible
 		{
 			//avião
 			if (q_strcasecmp(name, "local")) {
@@ -3737,7 +3743,7 @@ static void Host_Tell_f(void) // modified by woods to accept wildcards, status #
 		return;
 
 	p = Cmd_Args();
-	p = strremove((char*)p, (char*)Cmd_Argv(1)); // the msg only -- use strremove to get rid of name
+	p = strremove((char*)p, (char*)Cmd_Argv(1)); // the msg only, use strremove to get rid of name
 
 	// remove quotes if present
 	quoted = false;
@@ -3912,7 +3918,7 @@ static void Host_Kill_f(void)
 
 	if (sv_player->v.health <= 0)
 	{
-		SV_ClientPrintf("Can't suicide -- already dead!\n");
+		SV_ClientPrintf("Can't suicide, already dead!\n");
 		return;
 	}
 
@@ -3928,7 +3934,7 @@ Host_Pause_f
 */
 static void Host_Pause_f(void)
 {
-	//ericw -- demo pause support (inspired by MarkV)
+	//ericw, demo pause support (inspired by MarkV)
 	if (cls.demoplayback)
 	{
 		cls.demopaused = !cls.demopaused;
@@ -3979,7 +3985,7 @@ static void Host_PreSpawn_f(void)
 
 	if (host_client->spawned)
 	{
-		Con_Printf("prespawn not valid -- already spawned\n");
+		Con_Printf("prespawn not valid, already spawned\n");
 		return;
 	}
 
@@ -4007,7 +4013,7 @@ static void Host_Spawn_f(void)
 
 	if (host_client->spawned)
 	{
-		Con_Printf("Spawn not valid -- already spawned\n");
+		Con_Printf("Spawn not valid, already spawned\n");
 		return;
 	}
 
@@ -4419,7 +4425,7 @@ static void Host_Give_f(void)
 		}
 		break;
 
-		//johnfitz -- give armour
+		//johnfitz, give armour
 	case 'a':
 		if (v > 150)
 		{
@@ -4449,7 +4455,7 @@ static void Host_Give_f(void)
 		//johnfitz
 	}
 
-	//johnfitz -- update currentammo to match new ammo (so statusbar updates correctly)
+	//johnfitz, update currentammo to match new ammo (so statusbar updates correctly)
 	switch ((int)(sv_player->v.weapon))
 	{
 	case IT_SHOTGUN:
@@ -4741,7 +4747,7 @@ void Host_Resetdemos(void)
 
 /*
 ==========================================================
-PROQUAKE FUNCTIONS (JPG 1.05)  -- added for #iplog woods
+PROQUAKE FUNCTIONS (JPG 1.05) , added for #iplog woods
 ==========================================================
 */
 
@@ -4769,7 +4775,7 @@ int unfun_match(const char* s1, char* s2) // woods add const
 	return false;
 }
 
-unsigned int Send_Identify_Command(unsigned int interval, void* param) // woods -- #identify+
+unsigned int Send_Identify_Command(unsigned int interval, void* param) // woods, #identify+
 {
 	char* lastconnected = (char*)param;
 
@@ -4806,7 +4812,7 @@ void Host_Identify_f(void)
 	{
 		Con_Printf("usage: identify or <player number or name>\n\n");
 
-		if (lastconnected[0] != '\0') // woods -- #identify+
+		if (lastconnected[0] != '\0') // woods, #identify+
 		{
 			Cbuf_AddText("status\n\n");
 			Con_Printf("identifying the ^mlast connected^m player\n\n");
@@ -5272,7 +5278,7 @@ void Host_InitCommands(void)
 
 	Cmd_AddCommand("maps", Host_Maps_f); //johnfitz
 	Cmd_AddCommand("mods", Host_Mods_f); //johnfitz
-	Cmd_AddCommand("games", Host_Mods_f); // as an alias to "mods" -- S.A. / QuakeSpasm
+	Cmd_AddCommand("games", Host_Mods_f); // as an alias to "mods", S.A. / QuakeSpasm
 	Cmd_AddCommand("mapname", Host_Mapname_f); //johnfitz
 	Cmd_AddCommand("randmap", Host_Randmap_f); //ericw
 

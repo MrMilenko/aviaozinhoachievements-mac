@@ -126,21 +126,191 @@ BOOL Pipe_IsConnected(void) {
 
 #else /* !_WIN32 */
 
-/* No launcher IPC on this mac or steam yet; achievements/stats calls are no ops. */
+/* milenko #macport, launcher IPC over an AF_UNIX datagram socket.
+ *
+ * The Win32 side uses a message-mode named pipe: every Pipe_Write is one message and
+ * every Pipe_Read receives exactly one. SOCK_DGRAM gives the same framing, so the
+ * protocol above this layer is unchanged. PIPE_NAME is a filesystem socket path here
+ * rather than \\.\pipe\..., see the APPLE branch of CMakeLists.txt.
+ *
+ * The launcher is the server (it binds PIPE_NAME); the engine is the client and binds
+ * its own per-pid address so the launcher has somewhere to reply to.
+ */
+
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <errno.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+
+static int  pipe_fd = -1;
+static char pipe_client_path[sizeof(((struct sockaddr_un *)0)->sun_path)];
 
 pipe_handle_t pipe_handle = NULL;
 char pipe_buffer[PIPE_BUFFER_SIZE];
 pipe_dword_t pipe_bytes_read;
 pipe_dword_t pipe_bytes_written;
 
-pipe_bool_t Pipe_Create(void) { return FALSE; }
-pipe_dword_t Pipe_AvailableBytes(void) { return 0; }
-pipe_bool_t Pipe_ConnectToNew(void) { return FALSE; }
-pipe_bool_t Pipe_ConnectToExisting(void) { return FALSE; }
-pipe_bool_t Pipe_Write(const char *format, ...) { (void)format; return FALSE; }
-pipe_bool_t Pipe_Read(void) { return FALSE; }
-void Pipe_Close(void) {}
-pipe_bool_t Pipe_IsConnected(void) { return FALSE; }
-void Pipe_BeginConnect(void) {}
+static void Pipe_SetAddr (struct sockaddr_un *sa, const char *path)
+{
+	memset (sa, 0, sizeof(*sa));
+	sa->sun_family = AF_UNIX;
+	strncpy (sa->sun_path, path, sizeof(sa->sun_path) - 1);
+}
+
+/* server side, used by the launcher, not the engine */
+pipe_bool_t Pipe_Create (void)
+{
+	struct sockaddr_un sa;
+
+	if (pipe_fd != -1)
+		return TRUE;
+
+	pipe_fd = socket (AF_UNIX, SOCK_DGRAM, 0);
+	if (pipe_fd < 0)
+		return FALSE;
+
+	unlink (PIPE_NAME);
+	Pipe_SetAddr (&sa, PIPE_NAME);
+	if (bind (pipe_fd, (struct sockaddr *)&sa, sizeof(sa)) < 0)
+	{
+		close (pipe_fd);
+		pipe_fd = -1;
+		return FALSE;
+	}
+
+	pipe_handle = &pipe_fd;
+	return TRUE;
+}
+
+pipe_dword_t Pipe_AvailableBytes (void)
+{
+	int pending = 0;
+
+	if (pipe_fd == -1)
+		return 0;
+	if (ioctl (pipe_fd, FIONREAD, &pending) < 0)
+		return 0;
+	return (pipe_dword_t)pending;
+}
+
+pipe_bool_t Pipe_ConnectToNew (void)
+{
+	return FALSE;	/* no accept() step for datagram sockets */
+}
+
+pipe_bool_t Pipe_ConnectToExisting (void)
+{
+	struct sockaddr_un sa;
+
+	if (pipe_fd != -1)
+		return TRUE;
+
+	pipe_fd = socket (AF_UNIX, SOCK_DGRAM, 0);
+	if (pipe_fd < 0)
+		return FALSE;
+
+	/* our own reply address; per-pid so several engines can share one launcher */
+	snprintf (pipe_client_path, sizeof(pipe_client_path), "%s.%ld",
+			PIPE_NAME, (long)getpid());
+	unlink (pipe_client_path);
+	Pipe_SetAddr (&sa, pipe_client_path);
+	if (bind (pipe_fd, (struct sockaddr *)&sa, sizeof(sa)) < 0)
+	{
+		close (pipe_fd);
+		pipe_fd = -1;
+		pipe_client_path[0] = '\0';
+		return FALSE;
+	}
+
+	/* connect() so send()/recv() work and we only hear from the launcher */
+	Pipe_SetAddr (&sa, PIPE_NAME);
+	if (connect (pipe_fd, (struct sockaddr *)&sa, sizeof(sa)) < 0)
+	{
+		close (pipe_fd);
+		pipe_fd = -1;
+		unlink (pipe_client_path);
+		pipe_client_path[0] = '\0';
+		return FALSE;
+	}
+
+	pipe_handle = &pipe_fd;
+	return TRUE;
+}
+
+pipe_bool_t Pipe_Write (const char *format, ...)
+{
+	va_list args;
+	int len;
+	ssize_t sent;
+
+	if (pipe_fd == -1)
+		return FALSE;
+
+	va_start (args, format);
+	len = vsnprintf (pipe_buffer, PIPE_BUFFER_SIZE, format, args);
+	va_end (args);
+
+	if (len < 0)
+		return FALSE;
+	if (len > PIPE_BUFFER_SIZE)
+		len = PIPE_BUFFER_SIZE;
+
+	sent = send (pipe_fd, pipe_buffer, (size_t)len, 0);
+	if (sent < 0)
+		return FALSE;
+
+	pipe_bytes_written = (pipe_dword_t)sent;
+	return TRUE;
+}
+
+pipe_bool_t Pipe_Read (void)
+{
+	ssize_t got;
+
+	if (pipe_fd == -1)
+		return FALSE;
+
+	/* blocking, to match ReadFile on the Win32 path */
+	do {
+		got = recv (pipe_fd, pipe_buffer, PIPE_BUFFER_SIZE - 1, 0);
+	} while (got < 0 && errno == EINTR);
+
+	if (got < 0)
+	{
+		pipe_bytes_read = 0;
+		return FALSE;
+	}
+
+	pipe_bytes_read = (pipe_dword_t)got;
+	pipe_buffer[got] = '\0';
+	return TRUE;
+}
+
+void Pipe_Close (void)
+{
+	if (pipe_fd != -1)
+	{
+		close (pipe_fd);
+		pipe_fd = -1;
+	}
+	if (pipe_client_path[0])
+	{
+		unlink (pipe_client_path);
+		pipe_client_path[0] = '\0';
+	}
+	pipe_handle = NULL;
+	pipe_available = 0;
+}
+
+pipe_bool_t Pipe_IsConnected (void)
+{
+	return (pipe_fd != -1) ? TRUE : FALSE;
+}
+
+void Pipe_BeginConnect (void) {}
 
 #endif /* _WIN32 */

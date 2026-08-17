@@ -23,9 +23,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef GL_IMAGE_H
 #define GL_IMAGE_H
 
-//image.h -- image reading / writing
+//image.h, image reading / writing
 
+#ifdef __cplusplus
+#include "gl_texmgr.h"	// milenko #macport, ISO C++ forbids forward enum refs, pull the real definition
+#else
 enum srcformat;
+#endif
 
 //be sure to free the hunk after using these loading functions
 byte *Image_LoadTGA (FILE *f, int *width, int *height);
